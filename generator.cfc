@@ -288,7 +288,7 @@ component {
 	public string function generateService() {
 		dao = variables.table & "DAO";
 
-		var service = "component accessors=true {" & crlf & crlf;
+		var service = "component accessors=true extends='baseService'{" & crlf & crlf;
 		service &= tab & "property " & dao & ";" & crlf & crlf;
 
 		service &= tab & "function init( beanFactory ) {" & crlf;
