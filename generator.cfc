@@ -158,7 +158,7 @@ component {
 	// Table Config Generator
 	public string function generateBean() {
 		var qColumns = getColumns(variables.table);
-		var bean = "component accessors=true {" & crlf;
+		var bean = "component accessors=true extends='#variables.sitetitle#.common.baseClasses..baseBean' {" & crlf;
 		for(i=1;i<=qColumns.recordCount;i++) {
 			var line = tab & "property ";
 			switch(qColumns.type_name[i]) {
@@ -288,7 +288,7 @@ component {
 	public string function generateService() {
 		dao = variables.table & "DAO";
 
-		var service = "component accessors=true extends='baseService'{" & crlf & crlf;
+		var service = "component accessors=true extends='#variables.sitetitle#.common.baseClasses.baseService'{" & crlf & crlf;
 		service &= tab & "property " & dao & ";" & crlf & crlf;
 
 		service &= tab & "function init( beanFactory ) {" & crlf;
@@ -324,7 +324,7 @@ component {
 
 	// DAO Generator
 	public string function generateDAO() {
-		var dao = "component accessors=true extends='baseDAO' {" & crlf & crlf;
+		var dao = "component accessors=true extends='#variables.sitetitle#.common.baseClasses.baseDAO' {" & crlf & crlf;
 
 		//Init
 		dao &= tab & "function init(beanFactory, config) {" & crlf;
