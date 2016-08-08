@@ -15,7 +15,7 @@ component {
 			variables.columnNames = valueList(variables.tableColumns.column_name);
 
 			for(i=1;i<=variables.tableColumns.recordCount;i++) {
-				if(variables.tableColumns.Is_PrimaryKey[i] EQ true) {
+				if(variables.tableColumns.Is_PrimaryKey[i]) {
 					var variables.pkField = variables.tableColumns.column_name[i];
 				}
 			}
@@ -158,7 +158,7 @@ component {
 	// Table Config Generator
 	public string function generateBean() {
 		var qColumns = getColumns(variables.table);
-		var bean = "component accessors=true extends='#variables.sitetitle#.common.baseClasses..baseBean' {" & crlf;
+		var bean = "component accessors=true extends='#variables.sitetitle#.common.baseClasses.baseBean' {" & crlf;
 		for(i=1;i<=qColumns.recordCount;i++) {
 			var line = tab & "property ";
 			switch(qColumns.type_name[i]) {
@@ -395,6 +395,7 @@ component {
 				}
 			}
 		}
+
 		dao &= tab & tab & tab & "qry.setSQL(sqlString);" & crlf & crlf;
 
 		dao &= tab & tab & tab & "qry.execute();" & crlf;
@@ -466,6 +467,14 @@ component {
 
 			dao &= tab & tab & "}" & crlf & crlf;
 		}
+
+		dao &= tab & tab & "if(structKeyExists(arguments,'customWhere'))" & crlf;
+		dao &= tab & tab & tab & "sqlString &= ' AND ' & arguments.customWhere;" & crlf;
+		dao &= crlf;
+
+		dao &= tab & tab & "if(structKeyExists(arguments,'orderby'))" & crlf;
+		dao &= tab & tab & tab & "sqlString &= ' ' & validateOrderBy(arguments.orderBy);" & crlf;
+		dao &= crlf;
 
 		dao &= tab & tab & "qry.setDatasource(variables.config.getDatasource());" & crlf;
 		dao &= tab & tab & "qry.setSQL(sqlString);" & crlf & crlf;
