@@ -212,6 +212,9 @@ component {
 		}
 		bean &= "}";
 
+		var beanFile = expandPath("./cfout/beans/#capitalizeString(variables.table)#.cfc");
+		FileWrite(beanFile, bean);
+
 		return bean;
 	}
 
@@ -315,38 +318,28 @@ component {
 
 	// Service Generator
 	public string function generateService() {
-		dao = variables.table & "DAO";
+		var dao = variables.table & "DAO";
 
 		var service = "component accessors=true extends='#variables.sitetitle#.common.baseClasses.baseService'{" & crlf & crlf;
 		service &= tab & "property " & dao & ";" & crlf & crlf;
 
 		service &= tab & "function init( beanFactory ) {" & crlf;
 		service &= tab & tab & "variables.beanFactory = beanFactory;" & crlf;
-		service &= tab & tab & "return this;" & crlf;
+		service &= tab & tab & "variables.entityName = '#variables.table#';" & crlf;
+		service &= tab & tab & "return super.init(beanFactory);" & crlf;
 		service &= tab & "}" & crlf & crlf;
 
-		//delete function
-		service &= tab & "public any function delete(required any bean) {" & crlf;
-		service &= tab & tab & "return get" & capitalizeString(dao) & "().delete(bean);" & crlf;
-		service &= tab & "}" & crlf & crlf;
-
-		//get function
-		service &= tab & "public array function get() {" & crlf;
-		service &= tab & tab & "return get" & capitalizeString(dao) & "().get(argumentCollection=arguments);" & crlf;
-		service &= tab & "}" & crlf & crlf;
-
-		//getNew function
-		service &= tab & "public any function getNew() {" & crlf;
-		service &= tab & tab & "return variables.beanFactory.getBean('" & variables.table &"');" & crlf;
-		service &= tab & "}" & crlf & crlf;
-
-		//save function
-		service &= tab & "public any function save(required any bean) {" & crlf;
-		service &= tab & tab & "return get" & capitalizeString(dao) & "().save(bean);" & crlf;
+		//setDAO function
+		service &= tab & "function set#dao#(#dao#){" & crlf;
+		service &= tab & tab & "this.#dao# = #dao#;" & crlf;
+		service &= tab & tab & "super.setDAO(#dao#)" & crlf;
 		service &= tab & "}" & crlf & crlf;
 
 
 		service &= "}"; // close component
+
+		var beanFile = expandPath("./cfout/#capitalizeString(variables.table)#Service.cfc");
+		FileWrite(beanFile, service);
 
 		return service;
 	}
@@ -435,7 +428,7 @@ component {
 		dao &= tab & "}" & crlf & crlf;
 
 		// Get
-		dao &= tab & "public array function get() {" & crlf;
+		dao &= tab & "public query function get() {" & crlf;
 		dao &= tab & tab & "var qry = new query();" & crlf;
 		dao &= tab & tab & "var sqlString = 'select ##variables.columnList## from ##variables.config.getSchema()##.#variables.table# where 1=1 ';" & crlf & crlf;
 
@@ -507,13 +500,7 @@ component {
 
 		dao &= tab & tab & "qry.setDatasource(variables.config.getDatasource());" & crlf;
 		dao &= tab & tab & "qry.setSQL(sqlString);" & crlf & crlf;
-		dao &= tab & tab & "try{" & crlf;
-		dao &= tab & tab & tab & "return queryToBeanArray(qry.execute().getResult(),'#variables.table#');" & crlf;
-		dao &= tab & tab & "} catch(any e){" & crlf;
-		dao &= tab & tab & tab & "var bean = variables.beanFactory.getBean('#variables.table#');" & crlf;
-		dao &= tab & tab & tab & "bean.setError('Get Failed', e);" & crlf;
-		dao &= tab & tab & tab & "return [bean];" & crlf;
-		dao &= tab & tab & "}" & crlf;
+		dao &= tab & tab & "return qry.execute().getResult();" & crlf;
 		dao &= tab & "}" & crlf & crlf;
 
 		// Save
@@ -725,6 +712,7 @@ component {
 
 		dao &= tab & tab & "try{" & crlf;
 		dao &= tab & tab & tab & "qry.execute();" & crlf;
+		dao &= tab & tab & tab & "bean.setIsNew(0);" & crlf;
 		dao &= tab & tab & "} catch(any e){" & crlf;
 		dao &= tab & tab & tab & "bean.setError('Record was not saved.', e);" & crlf;
 		dao &= tab & tab & "}" & crlf;
@@ -733,6 +721,9 @@ component {
 
 		dao &= crlf;
 		dao &= "}" & crlf; // closes DAO
+
+		var beanFile = expandPath("./cfout/#capitalizeString(variables.table)#DAO.cfc");
+		FileWrite(beanFile, dao);
 
 		return dao;
 	}
