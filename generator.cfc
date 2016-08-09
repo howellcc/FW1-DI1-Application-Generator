@@ -13,10 +13,11 @@ component {
 			variables.table = arguments.table;
 			variables.tableColumns = getColumns(variables.table);
 			variables.columnNames = valueList(variables.tableColumns.column_name);
+			variables.pkField = variables.tableColumns.column_name[1];
 
 			for(i=1;i<=variables.tableColumns.recordCount;i++) {
 				if(variables.tableColumns.Is_PrimaryKey[i]) {
-					var variables.pkField = variables.tableColumns.column_name[i];
+					variables.pkField = variables.tableColumns.column_name[i];
 				}
 			}
 		}
@@ -43,7 +44,35 @@ component {
 
 	// Get Table Info (Column Names)
 	public query function getColumns(required string table) {
-		return new dbinfo(datasource=variables.dsn).columns(table=arguments.table);
+		//return new dbinfo(datasource=variables.dsn).columns(table=arguments.table);
+		var q = new query();
+		q.setDatasource(variables.dsn);
+		q.setSQL("
+			select isNull(c.character_octet_length,0) as char_octet_length
+					,c.column_default as column_default_value
+					,c.column_name
+					,c.character_maximum_length as column_size
+					,isNull(c.datetime_precision,0) as decimal_digits
+					,CASE WHEN tc.CONSTRAINT_TYPE = 'FOREIGN KEY' THEN 1 ELSE 0 END as is_foreignKey
+					,c.is_nullable
+					,CASE WHEN tc.CONSTRAINT_TYPE = 'PRIMARY KEY' THEN 1 ELSE 0 END as is_primaryKey
+					,c.ordinal_position
+					,'' as referenced_primarykey
+					,'' as referenced_primarykey_table
+					,'' as remarks
+					,c.data_type as type_name
+					,c.table_schema
+			FROM INFORMATION_SCHEMA.COLUMNS c
+			LEFT OUTER JOIN INFORMATION_SCHEMA.KEY_COLUMN_USAGE KU on c.TABLE_CATALOG = ku.TABLE_CATALOG
+																	and c.TABLE_SCHEMA = ku.TABLE_SCHEMA
+																	and c.TABLE_NAME = ku.TABLE_NAME
+																	and c.COLUMN_NAME = ku.COLUMN_NAME
+			LEFT OUTER join INFORMATION_SCHEMA.TABLE_CONSTRAINTS tc on ku.CONSTRAINT_NAME = tc.CONSTRAINT_NAME
+			WHERE c.TABLE_NAME=:tableName
+
+		");
+		q.addParam(name='tableName', value='#arguments.table#',CFSQLTYPE='CF_SQL_VARCHAR');
+		return q.execute().getResult();
 	}
 
 	// Capitalize first letter of a string
