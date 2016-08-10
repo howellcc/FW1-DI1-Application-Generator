@@ -318,15 +318,15 @@ component {
 
 	// Service Generator
 	public string function generateService() {
-		var dao = variables.table & "DAO";
+		var dao = capitalizeString(variables.table) & "DAO";
 
 		var service = "component accessors=true extends='#variables.sitetitle#.common.baseClasses.baseService'{" & crlf & crlf;
 		service &= tab & "property " & dao & ";" & crlf & crlf;
 
 		service &= tab & "function init( beanFactory ) {" & crlf;
 		service &= tab & tab & "variables.beanFactory = beanFactory;" & crlf;
-		service &= tab & tab & "variables.entityName = '#variables.table#';" & crlf;
-		service &= tab & tab & "return super.init(beanFactory);" & crlf;
+		service &= tab & tab & "variables.entityName = '#capitalizeString(variables.table)#';" & crlf;
+		service &= tab & tab & "return super.init(beanFactory,variables.entityName);" & crlf;
 		service &= tab & "}" & crlf & crlf;
 
 		//setDAO function
